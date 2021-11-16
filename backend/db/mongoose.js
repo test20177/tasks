@@ -6,7 +6,7 @@ const connectDb = async() => {
         await mongoose.connect(database)
         console.log(`Nawiazano polaczenie z baza danych ${database}`)
     } catch (err) {
-        console.log('Nie mozna polaczyc sie z baza danych! ', err);
+        console.log('Nie mozna polaczyc sie z baza danych! ', err)
         process.exit()
     }
 }

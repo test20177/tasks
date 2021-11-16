@@ -4,6 +4,7 @@ import Modal from 'react-modal'
 
 import { useState, useEffect } from 'react'
 import DeleteTask from './DeleteTask/DeleteTask'
+import NewTask from './NewTask/NewTask'
 
 let initTasks = [
   {
@@ -24,6 +25,7 @@ const Tasks = () => {
 
   const [tasks, setTasks] = useState(initTasks)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showNewTaskForm, setNewTaskForm] = useState(false)
   const [currentTask, setCurrentTask] = useState()
 
   useEffect( () => {
@@ -39,6 +41,10 @@ const Tasks = () => {
       )
   }, [tasks])  
 
+  const closeDeleteModal = () => setShowDeleteModal(false)
+  
+  const openDeleteModal = () => setShowDeleteModal(true)
+
   const changeTaskStatus = (id) => {
       let newTasks = [...tasks]
       newTasks.find( task => task.id === id).done = !newTasks.find( task => task.id === id).done
@@ -49,13 +55,12 @@ const Tasks = () => {
     setTasks( tasks.filter( task => task.id !== id ) )
   }
 
-  const closeDeleteModal = () => {
-    setShowDeleteModal(false)
-  }
-  
-  const openDeleteModal = () => { 
-    setShowDeleteModal(true)
-  }
+  const addTask = (task => {
+    const newTasks = [...tasks]
+    newTasks.push(task)
+    setTasks(newTasks)
+    setNewTaskForm(false)
+  })
 
   return (
     <>
@@ -79,17 +84,31 @@ const Tasks = () => {
           closeDeleteModal={closeDeleteModal}
         />
       </Modal>
-      <div className="row mt-4">
+      
+      { !showNewTaskForm ? (
+        <div className="row mt-4">
           <div className="col-2">
-              <h4>Lista zleceń</h4>
+            <h4>Lista zleceń</h4>
           </div>
           <div className="col-10">
-              <button type="button" 
-                      className="btn btn-sm btn-primary" >
-                      Dodaj zlecenie
-              </button>
+            <button type="button" 
+                    className="btn btn-sm btn-primary" 
+                    onClick={() => setNewTaskForm(true)}>
+                    Dodaj zlecenie
+            </button>
           </div>
-      </div>
+        </div>
+      ) : (
+        <div className="row mt-4">
+          <div className="col">
+            <NewTask 
+                onAdd={(task) => addTask(task)}
+                onCancel={() => setNewTaskForm(false)}
+            />
+          </div>
+        </div>
+      )}
+      
       <div className="row mt-2">
           <div className="col-12">
           { 
@@ -131,5 +150,3 @@ const Tasks = () => {
 }
 
 export default Tasks
-
-
