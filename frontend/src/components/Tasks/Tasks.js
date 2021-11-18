@@ -1,29 +1,17 @@
-import Task from './Task/Task'
-import Modal from 'react-modal'
-import { deleteModalStyle, editModalStyle } from './Tasks.css.js'
 import { useState, useEffect } from 'react'
+import axios from '../../axios'
+import Modal from 'react-modal'
+import Task from './Task/Task'
 import DeleteTask from './DeleteTask/DeleteTask'
 import EditTask from './EditTask/EditTask'
 import NewTask from './NewTask/NewTask'
-
-let initTasks = [
-  {
-    id: 123,
-    title: 'Uzupełnić płyny',
-    body: 'łazienka i kotłownia',
-    done: false
-  },
-  {
-    id: 124,
-    title: 'Oświetlenie placu',
-    body: 'Wymienić bezpiecznik w rozdzielni',
-    done: true
-  },
-]
+import {NotificationContainer, NotificationManager} from 'react-notifications'
+import 'react-notifications/lib/notifications.css'
+import { deleteModalStyle, editModalStyle } from './Tasks.css.js'
 
 const Tasks = () => {
 
-  const [tasks, setTasks] = useState(initTasks)
+  const [tasks, setTasks] = useState()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showEditTaskModal, setShowEditTaskModal] = useState(false)
   const [showNewTaskForm, setNewTaskForm] = useState(false)
@@ -31,10 +19,11 @@ const Tasks = () => {
 
   useEffect(() => {
     Modal.setAppElement('body')
+    fetchTasks()
   }, [])
 
   useEffect(() => {
-    const uncompletedTasks = tasks.filter(task => task.done === false).length
+    const uncompletedTasks = tasks?.filter(task => task.done === false).length
     document.title = 'Zlecenia '
       + (uncompletedTasks
         ? ` (niezrealizowanych ${uncompletedTasks})`
@@ -48,30 +37,72 @@ const Tasks = () => {
   const openEditModal = () => setShowEditTaskModal(true)
   const closeEditModal = () => setShowEditTaskModal(false)
 
-  const changeTaskStatus = (id) => {
-    let newTasks = [...tasks]
-    newTasks.find(task => task.id === id).done = !newTasks.find(task => task.id === id).done
-    setTasks(newTasks)
-  }
-
-  const addTask = task => {
-    const newTasks = [...tasks]
-    newTasks.push(task)
-    setTasks(newTasks)
-    setNewTaskForm(false)
-  }
-
-  const saveTask = task => {
-    const newTasks = [...tasks]
-    const index = newTasks.findIndex(item => item.id === task.id)
-    if (index >= 0) {
-      newTasks[index] = task
-      setTasks(newTasks)
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get('/tasks')
+      setTasks(res.data)
+    } catch (err) {
+      return NotificationManager.error('Brak połączenia z serwerem')
     }
+    NotificationManager.success('Połączono z serwerem')
   }
 
-  const deleteTask = id => {
-    setTasks(tasks.filter(task => task.id !== id))
+  const addTask = async task => {
+    try {
+        // adding backend
+        const res = await axios.post('/tasks', task)
+        const newTask = res.data
+        // adding frontend
+        const copyTasks = [...tasks]
+        copyTasks.push(newTask)
+        setTasks(copyTasks)
+        setNewTaskForm(false)
+    } catch (err) {
+        return NotificationManager.error('Nie można dodać zlecenia')
+    }
+    NotificationManager.success('Dodano zlecenie')
+  }
+
+  const editTask = async task => {
+    try {
+        // edit backend
+        await axios.put('/tasks/' + task._id, task)
+        // edit frontend
+        const newTasks = [...tasks]
+        const index = newTasks.findIndex(item => item._id === task._id)
+        if (index >= 0) {
+          newTasks[index] = task
+          setTasks(newTasks)
+        }
+    } catch (err) {
+        return NotificationManager.error('Nie można zapisać zmian')
+    }
+    NotificationManager.success('Zapisano zmiany')
+  }
+
+  const changeTaskStatus = async id => {
+    try {
+        // edit backend
+        const task = await tasks.find(task => task._id === id)
+        await axios.put('/tasks/' + task._id, {...task, done: !task.done})
+        // edit frontend
+        let newTasks = [...tasks]
+        newTasks.find(task => task._id === id).done = !newTasks.find(task => task._id === id).done
+        setTasks(newTasks)
+    } catch (err) {
+        return NotificationManager.error('Nie można zapisać zmian')
+    }
+    NotificationManager.success('Zapisano zmiany')
+  }
+
+  const deleteTask = async id => {
+    try {
+        await axios.delete('/tasks/' + id)
+        setTasks(tasks.filter(task => task._id !== id))
+    } catch (err) {
+        return NotificationManager.error('Nie można usunąć zlecenia')
+    }
+    NotificationManager.success('Usunięto zlecenie')
   }
 
   return (
@@ -95,11 +126,10 @@ const Tasks = () => {
       >
         <EditTask
           task={currentTask}
-          saveTask={(task) => saveTask(task)}
+          saveTask={(task) => editTask(task)}
           closeEditModal={closeEditModal}
         />
       </Modal>
-
 
       {!showNewTaskForm ? (
         <div className="row mt-4">
@@ -146,6 +176,7 @@ const Tasks = () => {
                   {tasks.map((task, index) => (
                     <Task
                       key={index}
+                      index={index}
                       task={task}
                       onDelete={() => {
                         setCurrentTask(task)
@@ -160,11 +191,12 @@ const Tasks = () => {
                 </tbody>
               </table>
             ) : (
-              <h3 className="text-secondary" >Brak zleceń</h3>
+              <h3 className="text-secondary">Brak zleceń</h3>
             )
           }
         </div>
       </div>
+      <NotificationContainer />
     </>
   )
 }

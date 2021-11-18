@@ -7,7 +7,7 @@ const DeleteTask = ({ task, deleteTask, closeDeleteModal }) => {
             <div className="d-flex justify-content-center">
                 <button className="btn btn-primary btn-block m-2"
                     onClick={() => {
-                        deleteTask(task.id)
+                        deleteTask(task._id)
                         closeDeleteModal()
                     }}>Tak
                 </button>

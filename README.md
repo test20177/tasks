@@ -16,6 +16,8 @@ and
 * [Bootstrap](https://getbootstrap.com/)
 * [dotenv](https://github.com/motdotla/dotenv#readme)
 * [react-modal](https://github.com/reactjs/react-modal)
+* [axios](https://axios-http.com/)
+* [react-notifications](https://github.com/tjrexer/react-notifications)
 
 ## Running
 
@@ -48,6 +50,8 @@ oraz
 * [Bootstrap](https://getbootstrap.com/)
 * [dotenv](https://github.com/motdotla/dotenv#readme)
 * [react-modal](https://github.com/reactjs/react-modal)
+* [axios](https://axios-http.com/)
+* [react-notifications](https://github.com/tjrexer/react-notifications)
 
 ## Uruchamianie
 

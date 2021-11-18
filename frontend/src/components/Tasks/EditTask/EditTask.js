@@ -12,10 +12,10 @@ const EditTask = ({ task, saveTask, closeEditModal }) => {
     const changeBodyHandler   = e => setBody(e.target.value)
     const changeStatusHandler = e => setDone(e.target.checked)
 
-    const submitForm = (e) => {
+    const submitForm = e => {
         e.preventDefault()
         saveTask({
-            id: task.id,
+            _id: task._id,
             title,
             body,
             done
@@ -35,7 +35,7 @@ const EditTask = ({ task, saveTask, closeEditModal }) => {
 
     return (
         <>
-            <h4 className="text-center">Edycja zlecenia (id: {task.id})</h4>
+            <h4 className="text-center">Edycja zlecenia (id: {task._id})</h4>
             <form onSubmit={submitForm} className="my-3">
                 <div className="row">
                     <label htmlFor="title" className="col-sm-2 col-form-label">Tytuł</label>
